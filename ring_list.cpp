@@ -1,95 +1,432 @@
 #include <iostream>
 using namespace std;
-template <class T>
-class ST
+class Per
 {
-    ST *next = this;
-    ST *previous;
-    T value;
-
   public:
-    ST()
+    Per *next;
+    Per *previous;
+    int koef;
+    int exp;
+    Per()
+    {
+        next = nullptr;
+        previous = nullptr;
+        this->koef = NULL;
+        this->exp = NULL;
+    }
+    Per(int koef, int exp)
     {
         next = this;
+        previous = this;
+        this->koef = koef;
+        this->exp = exp;
     }
-    ~ST() // clear memory
+    void add(int koef, int exp)
     {
-        while (this->next)
+        if (next == nullptr)
         {
-            ST *temp;
-            temp = this->next;
-            delete this->previous;
-            delete this->next;
-            this = temp;
-            delete temp;
-        }
-    }
-    void add(T num, ST *fir) // add element
-    {
-        if (next == fir)
-        {
-            value = num;
-            ST *New;
-            New = new ST;
-            New->next = fir;
-            New->value = NULL;
-            New->previous = this;
-            next = New;
-            fir->previous = New;
+            next = this;
+            previous = this;
+            this->koef = koef;
+            this->exp = exp;
         }
         else
-            next->add(num, fir);
-    }
-    friend void show_ell(ST *q, int num) // show num elements
-    {
-        int i = 0;
-        ST *fir;
-        fir = q;
-        do
         {
-            i++;
-            cout << q << " : " << q->value << endl;
-            q = q->next;
-            if (q->value == NULL)
-                q = q->next;
-        } while (i != num);
+            Per *New = new Per;
+            New->next = next;
+            next->previous = New;
+            next = New;
+            New->koef = koef;
+            New->exp = exp;
+            New->previous = this;
+        }
     }
-    friend void fr_end_show_ell(ST *q, int num) // show num elements in the opposite direction
+    void add(Per &var)
     {
-        int i = 0;
-        do
+        if (next == nullptr)
         {
-            q = q->previous;
-            if (q->value == NULL)
-                q = q->previous;
-            i++;
-            cout << q << " : " << q->value << endl;
-        } while (i != num);
+            next = this;
+            previous = this;
+            this->koef = var.koef;
+            this->exp = var.exp;
+        }
+        else
+        {
+            Per *New = new Per;
+            New->next = next;
+            next->previous = New;
+            next = New;
+            New->koef = var.koef;
+            New->exp = var.exp;
+            New->previous = this;
+        }
     }
-    friend ST *left(ST *q) // move the pointer to the left
+    bool operator!=(Per &a)
     {
+        if (koef != a.koef || exp != a.exp)
+            return true;
+        else
+            return false;
+    }
+    bool operator==(Per &a)
+    {
+        if (koef == a.koef && exp == a.exp)
+            return true;
+        else
+            return false;
+    }
+};
+class Ring
+{
+  private:
+    Per *it;
+    int size;
 
-        q = q->previous;
-        if (q->value == NULL)
-            q = q->previous;
+  public:
+    ~Ring()
+    {
+        if (it->next != nullptr)
+        {
+            it->previous->next = nullptr;
+            while (it->next != nullptr)
+            {
+                Per *cash = it;
+                it = it->next;
+                delete cash;
+            }
+        }
+        delete it;
+    }
+    Ring()
+    {
+        it = new Per;
+        size = 0;
+    }
+    Ring(int koef, int exp)
+    {
+        it = new Per(koef, exp);
+        size = 1;
+    }
+    Ring(int **mas, int arsize)
+    {
+        it = new Per;
+        size = 0;
+        for (int i = 0; i < arsize; i++)
+        {
+            size++;
+            it->add(mas[i][0], mas[i][1]);
+        }
+    }
+    void add(int koef, int exp)
+    {
+        size++;
+        it->add(koef, exp);
+    }
+    void add(Per &var)
+    {
+        size++;
+        it->add(var);
+    }
+    friend istream &operator>>(istream &in, Ring &q) // add
+    {
+        int koef, exp;
+        cin >> koef >> exp;
+        cin >> koef >> exp;
+        q.add(koef, exp);
+        return in;
+    }
+    friend Per &operator>>(Per &in, Ring &q) // add
+    {
+        q.add(in.koef, in.exp);
+        return in;
+    }
+    friend istream &operator>(istream &in, Ring &q) // exchange
+    {
+        int koef, exp;
+        cin >> koef >> exp;
+        q.it->koef = koef;
+        q.it->exp = exp;
+        return in;
+    }
+    friend Per &operator>(Per &in, Ring &q) // exchange
+    {
+        q.it->koef = in.koef;
+        q.it->exp = in.exp;
+        return in;
+    }
+    friend ostream &operator<(ostream &ou, Ring &q) // cout
+    {
+        if (q.it->next == nullptr)
+        {
+            cout << "\n!!! 0 elements !!!\n";
+            return ou;
+        }
+        cout << q.it->koef << "x^" << q.it->exp;
+        return ou;
+    }
+    friend Per &operator<(Per &ou, Ring &q) // out
+    {
+        if (q.it->next == nullptr)
+        {
+            cout << "\n!!! 0 elements !!!\n";
+            return ou;
+        }
+        ou.exp = q.it->exp;
+        ou.koef = q.it->koef;
+        return ou;
+    }
+    friend ostream &operator<<(ostream &ou, Ring &q) // cout and delete
+    {
+        if (q.it->next == nullptr)
+        {
+            cout << "\n!!! 0 elements !!!\n";
+            return ou;
+        }
+        else if (q.it->next == q.it)
+        {
+            q.size--;
+            cout << q.it->koef << "x^" << q.it->exp;
+            q.it->next = nullptr;
+            q.it->previous = nullptr;
+            return ou;
+        }
+        else
+        {
+            q.size--;
+            cout << q.it->koef << "x^" << q.it->exp;
+            q.it->previous->next = q.it->next;
+            Per *cash = q.it;
+            q.it->next->previous = q.it->previous;
+            q.it = q.it->next;
+            delete cash;
+            return ou;
+        }
+    }
+    friend Per &operator<<(Per &ou, Ring &q) // out and delete
+    {
+        if (q.it->next == nullptr)
+        {
+            cout << "\n!!! 0 elements !!!\n";
+            return ou;
+        }
+        else if (q.it->next == q.it)
+        {
+            q.size--;
+            ou.exp = q.it->exp;
+            ou.koef = q.it->koef;
+            q.it->next = nullptr;
+            q.it->previous = nullptr;
+            return ou;
+        }
+        else
+        {
+            q.size--;
+            ou.exp = q.it->exp;
+            ou.koef = q.it->koef;
+            q.it->previous->next = q.it->next;
+            Per *cash = q.it;
+            q.it->next->previous = q.it->previous;
+            q.it = q.it->next;
+            delete cash;
+            return ou;
+        }
+    }
+    void operator++(int) // move the pointer to the right
+    {
+        if (it->next == nullptr || it->next == it->next->next)
+            return;
+        it = it->next;
+    }
+    void operator--(int) // move the pointer to the right
+    {
+        if (it->next == nullptr || it->next == it->next->next)
+            return;
+        it = it->previous;
+    }
+    void insertsort()
+    {
+        int j, i, max, temp, temp2, temp3;
+        for (i = 1; i < size; i++)
+        {
+            max = it->exp;
+            temp3 = it->koef;
+            j = i;
+            (*this)--;
+            temp = it->exp;
+            temp2 = it->koef;
+            while (j >= 1 && temp < max)
+            {
+                (*this)++;
+                it->exp = temp;
+                it->koef = temp2;
+                (*this)--;
+                (*this)--;
+                temp = it->exp;
+                temp2 = it->koef;
+                j--;
+            }
+            (*this)++;
+            it->exp = max;
+            it->koef = temp3;
+            while (j < i)
+            {
+                j++;
+                (*this)++;
+            }
+            (*this)++;
+        }
+    }
+    void operator=(Ring &a)
+    {
+        if (a.size == 0)
+        {
+            this->~Ring();
+            Per *cash = new Per;
+            cash->next = nullptr;
+            cash->previous = nullptr;
+            it = cash;
+        }
+        else
+        {
+            this->~Ring();
+            Per *cash = new Per;
+            for (int i = 0; i < a.size; i++)
+            {
+                cash->add(a.it->koef, a.it->exp);
+                a++;
+            }
+            it = cash;
+            size = a.size;
+        }
+    }
+    bool operator==(Ring &a)
+    {
+        bool t = true;
+        if (size != a.size)
+            return false;
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (*it == *a.it)
+                {
+                    t = false;
+                    break;
+                }
+                a++;
+            }
+            if (t)
+                return false;
+            (*this)++;
+            t = true;
+        }
+        return true;
+    }
+    bool find(Per &a)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (*it == a)
+            {
+                return true;
+            }
+            (*this)++;
+        }
+        return false;
+    }
+    bool find(int koef, int exp)
+    {
+        for (int j = 0; j < size; j++)
+        {
+            if (it->exp == exp && it->koef == koef)
+            {
+                return true;
+            }
+            (*this)++;
+        }
+        return false;
+    }
+    bool operator!=(Ring &a)
+    {
+        bool t = true;
+        if (size != a.size)
+            return true;
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                if (*it == *a.it)
+                {
+                    t = false;
+                    break;
+                }
+                a++;
+            }
 
-        return q;
+            if (t)
+                return true;
+            (*this)++;
+            t = true;
+        }
+        return false;
     }
-    friend ST *right(ST *q) // move the pointer to the right
+    int getSize()
     {
-        q = q->next;
-        if (q->value == NULL)
-            q = q->next;
-        return q;
-    }
-    friend ST *delthis(ST *q) // delete one element
-    {
-        q->previous->next = q->next;
-        q->next->previous = q->previous;
-        return q->previous;
+        return size;
     }
 };
 int main()
 {
+    Ring a, b;
+    int t;
+    for (int i = 9; i >= 0; i--)
+    {
+        t = rand() % 10;
+        a.add(t, t * t);
+    }
+    a.insertsort();
+    for (int i = 0; i < a.getSize(); i++)
+    {
+        cout < a;
+        cout << ' ';
+        a++;
+    }
+    cout << '\n';
+    for (int i = 0; i < a.getSize()/2; i++)
+    {
+        cout << a;
+        cout << ' ';
+        a++;
+    }
+    b = a;
+    cout << '\n';
+    for (int i = 0; i < b.getSize(); i++)
+    {
+        cout << b;
+        cout << ' ';
+    }
+    bool chek = (a == b);
+    cout << '\n'
+         << chek;
+    chek = (a != b);
+    cout << '\n'
+         << chek;
+    Per test;
+    test << a;
+    cout << '\n'
+         << test.koef << "x^" << test.exp << '\n';
+    test >> a;
+    a++;
+    test >> a;
+    for (int i = 0; i < 5; i++)
+    {
+        cout < a;
+        cout << ' ';
+        a++;
+    }
+    cout << '\n'
+         << a.find(test);
+    cout << '\n'
+         << a.find(1, 2);
     return 0;
 }

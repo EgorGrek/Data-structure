@@ -3,52 +3,66 @@ using namespace std;
 template <class T>
 class ST
 {
-    ST *next = NULL;
+    ST *next = nullptr;
     T vocab;
 
   public:
     ~ST() // clear memory
     {
-        while (this->next)
+        while (next != nullptr)
         {
-            ST *temp;
-            temp = this->next;
-            delete this->next;
-            this = temp;
-            delete temp;
+            ST *temp = next;
+            next = next->next;
+            try
+            {
+                delete temp;
+                throw true;
+            }
+            catch (bool t)
+            {
+                break;
+            }
         }
     }
-    friend ST *add(ST *t, T num) // add one element
+    void add(T num) // add one element
     {
-        ST *New;
-        New = new ST;
-        New->next = t;
-        New->vocab = num;
-        return New;
+        ST<T> *New;
+        New = new ST<T>;
+        New->next = next;
+        New->vocab = vocab;
+        vocab = num;
+        next = New;
     }
-    friend void show(ST *q) // show all element
+    void show() // show all element
     {
+        ST<T> *q = this;
         while (q->next)
         {
             cout << q << " : " << q->vocab << endl;
             q = q->next;
         }
     }
-    friend ST *showdel(ST *q) // show one element and delete its
+    void showdel() // show one element and delete its
     {
-        if (!q->next)
+        if (!next)
         {
-            cout << "No more elements" << endl;
-            return q;
+            cout << "No more elements\n";
         }
-        ST<T> *temp;
-        temp = q->next;
-        cout << q << " : " << q->vocab << endl;
-        delete q;
-        return temp;
+        else
+        {
+            ST<T> *temp = this;
+            cout << this << " : " << vocab << endl;
+            *this = *next;
+        }
     }
 };
 int main()
 {
+    ST<int> q;
+    for (int i = 0; i < 10; i++)
+        q.add(i);
+    q.show();
+    for (int i = 0; i < 11; i++)
+        q.showdel();
     return 0;
 }

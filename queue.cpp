@@ -3,19 +3,25 @@ using namespace std;
 template <class T>
 class ST
 {
-    ST *next = NULL;
+    ST *next = nullptr;
     T vocab;
 
   public:
     ~ST() // clear memory
     {
-        while (this->next)
+        while (next != nullptr)
         {
-            ST *temp;
-            temp = this->next;
-            delete this->next;
-            this = temp;
-            delete temp;
+            ST *temp = next;
+            next = next->next;
+            try
+            {
+                delete temp;
+                throw true;
+            }
+            catch (bool t)
+            {
+                break;
+            }
         }
     }
     void add(T num) // add one element
@@ -25,35 +31,41 @@ class ST
             vocab = num;
             ST *New;
             New = new ST;
-            New->next = NULL;
+            New->next = nullptr;
             next = New;
         }
         else
             next->add(num);
     }
-    friend void show(ST *q) // show all elements
+    void show() // show all elements
     {
+        ST<T> *q = this;
         while (q->next)
         {
             cout << q << " : " << q->vocab << endl;
             q = q->next;
         }
     }
-    friend ST *showdel(ST *q) // show one element and delete its
+    void showdel() // show one element and delete its
     {
+        ST<T> *q = this;
         if (!q->next)
         {
-            cout << "No more elements" << endl;
-            return q;
+            cout << "No more elements\n";
         }
-        ST *temp;
-        temp = q->next;
-        cout << q << " : " << q->vocab << endl;
-        delete q;
-        return temp;
+        else
+        {
+            temp = q;
+            cout << q << " : " << q->vocab << endl;
+            *this = *q->next;
+            delete temp;
+        }
     }
 };
 int main()
 {
+    ST<int> q;
+    for (int i = 0; i < 10; i++)
+        q.add(i);
     return 0;
 }
