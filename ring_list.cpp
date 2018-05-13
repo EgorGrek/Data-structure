@@ -107,6 +107,11 @@ class Ring
         it = new Per(koef, exp);
         size = 1;
     }
+    Ring(Per &a)
+    {
+        it = new Per(a);
+        size = 1;
+    }
     Ring(int **mas, int arsize)
     {
         it = new Per;
@@ -127,10 +132,39 @@ class Ring
         size++;
         it->add(var);
     }
+    operator bool()
+    {
+        if (it->koef || it->exp)
+            return true;
+        else
+            return false;
+    }
+    operator int **()
+    {
+        int **mas = new int *[size];
+        for (int i = 0; i < size; i++)
+        {
+            mas[i] = new int[2];
+            mas[i][0] = it->koef;
+            mas[i][1] = it->exp;
+            it = it->next;
+        }
+        return mas;
+    }
+    operator Per *()
+    {
+        Per *mas = new Per[size];
+        for (int i = 0; i < size; i++)
+        {
+            mas[i].koef = it->koef;
+            mas[i].exp = it->exp;
+            it = it->next;
+        }
+        return mas;
+    }
     friend istream &operator>>(istream &in, Ring &q) // add
     {
         int koef, exp;
-        cin >> koef >> exp;
         cin >> koef >> exp;
         q.add(koef, exp);
         return in;
@@ -233,13 +267,13 @@ class Ring
     }
     void operator++(int) // move the pointer to the right
     {
-        if (it->next == nullptr || it->next == it->next->next)
+        if (it->next == nullptr || it->next == it)
             return;
         it = it->next;
     }
     void operator--(int) // move the pointer to the right
     {
-        if (it->next == nullptr || it->next == it->next->next)
+        if (it->next == nullptr || it->next == it)
             return;
         it = it->previous;
     }
@@ -384,6 +418,14 @@ int main()
         t = rand() % 10;
         a.add(t, t * t);
     }
+    int **mas = (int **)a;
+    for (int i = 0; i < a.getSize(); i++)
+        cout << mas[i][0] << ' ' << mas[i][1] << '\n';
+    cout << '\n';
+    Per *testic = (Per *)a;
+    for (int i = 0; i < a.getSize(); i++)
+        cout << testic[i].koef << ' ' << testic[i].exp << '\n';
+    cout << '\n';
     a.insertsort();
     for (int i = 0; i < a.getSize(); i++)
     {
@@ -392,7 +434,7 @@ int main()
         a++;
     }
     cout << '\n';
-    for (int i = 0; i < a.getSize()/2; i++)
+    for (int i = 0; i < a.getSize(); i++)
     {
         cout << a;
         cout << ' ';
